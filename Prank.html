@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Track Klik dengan Login</title>
+    <style>
+        body { font-family: sans-serif; }
+        .login-form, .main-content { margin: 20px; }
+        button { padding: 10px 15px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="login-form" id="loginForm">
+        <h2>Login Dulu!</h2>
+        <input type="text" id="username" placeholder="Username"><br><br>
+        <input type="password" id="password" placeholder="Password"><br><br>
+        <button onclick="login()">Login</button>
+    </div>
+
+    <div class="main-content" id="mainContent" style="display:none;">
+        <h2>Selamat Datang, <span id="userDisplay"></span>!</h2>
+        <button id="trackButton">Klik Saya!</button>
+    </div>
+
+    <script>
+        let currentUser = null;
+
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            // Simpan username (INI HANYA CONTOH, JANGAN SIMPAN PASSWORD ASLI DI CLIENT-SIDE!)
+            currentUser = username;
+            document.getElementById('userDisplay').innerText = username;
+
+            // Sembunyikan form login, tampilkan konten utama
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('mainContent').style.display = 'block';
+
+            // Pasang event listener setelah login
+            setupTrackClick();
+        }
+
+        function setupTrackClick() {
+            const button = document.getElementById('trackButton');
+
+            button.addEventListener('click', async () => {
+                const waktuKlik = new Date().toISOString();
+                const dataKlik = {
+                    waktu: waktuKlik,
+                    user: currentUser, // Kirim username yang login
+                    elemen: button.id
+                };
+
+                try {
+                    const response = await fetch('http://localhost:3000/track-klik', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(dataKlik)
+                    });
+
+                    const result = await response.json();
+                    alert(result.pesan);
+                } catch (error) {
+                    console.error('Gagal kirim data:', error);
+                    alert('Gagal terhubung ke server!');
+                }
+            });
+        }
+    </script>
+</body>
+</html>
