@@ -1,0 +1,133 @@
+from PIL import Image, ImageDraw, ImageFont
+
+# 1. Load Gambar
+background = Image.open("background.png").convert("RGBA")
+character = Image.open("character.png").convert("RGBA")
+instagram_icon = Image.open("instagram.png").convert("RGBA")
+facebook_icon = Image.open("facebook.png").convert("RGBA")
+twitter_icon = Image.open("twitter.png").convert("RGBA")
+
+# 2. Konfigurasi Ukuran dan Posisi
+lebar_background, tinggi_background = background.size
+ukuran_character = (400, 400)  # Sesuaikan
+posisi_character = (lebar_background // 2 - ukuran_character[0] // 2, 100)  # Tengah atas
+diameter_lingkaran = 450
+posisi_lingkaran = (lebar_background // 2 - diameter_lingkaran // 2, 75)
+
+# Ukuran Ikon Media Sosial
+ukuran_ikon = (50, 50)
+instagram_icon = instagram_icon.resize(ukuran_ikon)
+facebook_icon = facebook_icon.resize(ukuran_ikon)
+twitter_icon = twitter_icon.resize(ukuran_ikon)
+
+# Posisi Ikon Media Sosial
+posisi_instagram = (lebar_background // 2 - ukuran_ikon[0] * 1.5, 550)
+posisi_facebook = (lebar_background // 2 - ukuran_ikon[0] // 2, 550)
+posisi_twitter = (lebar_background // 2 + ukuran_ikon[0], 550)
+
+# 3. Resize Gambar
+character = character.resize(ukuran_character)
+
+# 4. Buat Mask Lingkaran
+mask = Image.new('L', (diameter_lingkaran, diameter_lingkaran), 0)
+draw = ImageDraw.Draw(mask)
+draw.ellipse((0, 0, diameter_lingkaran, diameter_lingkaran), fill=255)
+
+# 5. Tempelkan Karakter ke Lingkaran (dengan Mask)
+character_dengan_lingkaran = Image.new('RGBA', (diameter_lingkaran, diameter_lingkaran), (0, 0, 0, 0))
+character_dengan_lingkaran.paste(character,
+                                  ((diameter_lingkaran - ukuran_character[0]) // 2,
+                                   (diameter_lingkaran - ukuran_character[1]) // 2),
+                                  character)
+background.paste(character_dengan_lingkaran, posisi_lingkaran, mask)
+
+# 6. Tambahkan Ikon Media Sosial
+background.paste(instagram_icon, posisi_instagram, instagram_icon)
+background.paste(facebook_icon, posisi_facebook, facebook_icon)
+background.paste(twitter_icon, posisi_twitter, twitter_icon)
+
+# 7. Tambahkan Teks dengan Gradasi Warna
+def buat_gradasi_warna(teks, font, warna_awal, warna_akhir, lebar):
+    """Membuat gambar teks dengan gradasi warna."""
+    gambar_teks = Image.new("RGBA", (lebar, font.getsize(teks)[1]), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(gambar_teks)
+
+    for i in range(lebar):
+        # Hitung proporsi warna
+        proporsi = i / lebar
+        r = int(warna_awal[0] * (1 - proporsi) + warna_akhir[0] * proporsi)
+        g = int(warna_awal[1] * (1 - proporsi) + warna_akhir[1] * proporsi)
+        b = int(warna_awal[2] * (1 - proporsi) + warna_akhir[2] * proporsi)
+        warna = (r, g, b)
+
+        # Gambar teks per kolom
+        draw.text((i, 0), teks[i:i+1], font=font, fill=warna)
+
+    return gambar_teks
+
+# Konfigurasi Teks
+font = ImageFont.truetype("arial.ttf", size=50)  # Ganti "arial.ttf" jika perlu
+nama_channel = "XanSan Boy"
+warna_awal = (150, 100, 255)  # Ungu
+warna_akhir = (255, 100, 200)  # Pink
+lebar_teks = font.getsize(nama_channel)[0]
+
+# Buat Gambar Teks dengan Gradasi
+gambar_teks_gradasi = buat_gradasi_warna(nama_channel, font, warna_awal, warna_akhir, lebar_teks)
+
+# Posisi Teks
+posisi_teks = (lebar_background // 2 - lebar_teks // 2, 620)
+
+# Tempelkan Teks ke Gambar Latar Belakang
+background.paste(gambar_teks_gradasi, posisi_teks, gambar_teks_gradasi)
+
+# Tambahkan Teks "Addon di Saluran"
+font_kecil = ImageFont.truetype("arial.ttf", size=30)
+teks_addon = "Addon di Saluran"
+lebar_teks_addon = font_kecil.getsize(teks_addon)[0]
+posisi_teks_addon = (lebar_background // 2 - lebar_teks_addon // 2, 680)
+draw = ImageDraw.Draw(background)
+draw.text(posisi_teks_addon, teks_addon, font=font_kecil, fill=(0, 0, 0))
+
+# 8. Buat Tombol-Tombol (Kotak dengan Teks Gradasi)
+def buat_tombol(teks, font, warna_awal, warna_akhir, lebar, tinggi):
+    """Membuat gambar tombol dengan teks gradasi dan border."""
+    gambar_tombol = Image.new("RGBA", (lebar, tinggi), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(gambar_tombol)
+
+    # Gambar Border (Kotak)
+    draw.rectangle((0, 0, lebar - 1, tinggi - 1), outline=(0, 0, 0), width=2)
+
+    # Buat Gambar Teks dengan Gradasi
+    gambar_teks_gradasi = buat_gradasi_warna(teks, font, warna_awal, warna_akhir, font.getsize(teks)[0])
+
+    # Posisi Teks di Tengah Tombol
+    posisi_teks = ((lebar - font.getsize(teks)[0]) // 2, (tinggi - font.getsize(teks)[1]) // 2)
+
+    # Tempelkan Teks ke Tombol
+    gambar_tombol.paste(gambar_teks_gradasi, posisi_teks, gambar_teks_gradasi)
+
+    return gambar_tombol
+
+# Konfigurasi Tombol
+font_tombol = ImageFont.truetype("arial.ttf", size=40)
+lebar_tombol = 400
+tinggi_tombol = 70
+warna_awal_tombol = (100, 150, 255)  # Biru Muda
+warna_akhir_tombol = (200, 100, 255)  # Ungu Muda
+
+# Teks Tombol
+teks_tombol = ["YOUTUBE", "INSTAGRAM", "X", "SALURAN WA"]
+
+# Posisi Tombol
+posisi_tombol_y = 750
+jarak_antar_tombol = 90
+posisi_tombol = [(lebar_background // 2 - lebar_tombol // 2, posisi_tombol_y + i * jarak_antar_tombol) for i in range(len(teks_tombol))]
+
+# Buat dan Tempelkan Tombol
+for i, teks in enumerate(teks_tombol):
+    gambar_tombol = buat_tombol(teks, font_tombol, warna_awal_tombol, warna_akhir_tombol, lebar_tombol, tinggi_tombol)
+    background.paste(gambar_tombol, posisi_tombol[i], gambar_tombol)
+
+# 9. Simpan Gambar Hasil
+background.save("hasil_gambar.png")
