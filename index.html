@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Tombol Notifikasi</title>
+</head>
+<body>
+
+  <h1>Contoh Tombol Notifikasi</h1>
+
+  <button onclick="tampilkanNotifikasi()">Pencet Aku!</button>
+
+  <script>
+    function tampilkanNotifikasi() {
+      let nama = prompt("Siapa yang pencet tombol?", "Amang");
+      if (nama != null) {
+        alert("Tombol sudah dipencet oleh " + nama + "!");
+      } else {
+        alert("Tombol sudah dipencet!");
+      }
+    }
+  </script>
+
+</body>
+</html>
